@@ -1,0 +1,576 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>广州·跨年旅行计划</title>
+    <style>
+        :root {
+            --bg-color: #f4f5f7;
+            --card-bg: #1e262c;
+            --text-main: #333333;
+            --text-muted: #8b949e;
+            --accent: #2ea043;
+            --accent-glow: rgba(46, 160, 67, 0.2);
+            --border-color: #e1e4e8;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            -webkit-font-smoothing: antialiased;
+        }
+        .container {
+            width: 100%;
+            max-width: 414px;
+            min-height: 100vh;
+            padding: 24px 20px;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        }
+        .header {
+            margin-bottom: 32px;
+        }
+        .subtitle {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #1b4d3e;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+            color: #111111;
+        }
+        .dates {
+            font-size: 13px;
+            color: #666666;
+        }
+        
+        /* 航班卡片 (深色) */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            border: 1px solid #141a1f;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+            color: #ffffff;
+        }
+        .flight-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .station {
+            text-align: center;
+        }
+        .station h2 {
+            font-size: 28px;
+            margin: 0 0 4px 0;
+            color: #ffffff;
+        }
+        .station p {
+            font-size: 12px;
+            color: #9ba3af;
+            margin: 0;
+        }
+        .flight-path {
+            flex-grow: 1;
+            margin: 0 20px;
+            position: relative;
+            text-align: center;
+        }
+        .flight-path::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            border-top: 1px dashed #30363d;
+            z-index: 1;
+        }
+        .flight-path span {
+            position: relative;
+            z-index: 2;
+            background-color: var(--card-bg);
+            padding: 0 8px;
+            font-size: 10px;
+            color: #3fb950;
+            text-transform: uppercase;
+        }
+        .flight-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        .flight-details div {
+            display: flex;
+            flex-direction: column;
+        }
+        .flight-details span {
+            color: #9ba3af;
+            margin-bottom: 4px;
+        }
+        .flight-details strong {
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        /* 旅程地图 (浅色) */
+        .map-card {
+            background-color: #f6f8fa;
+            border-radius: 16px;
+            height: 220px;
+            margin-bottom: 32px;
+            position: relative;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+        .map-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 50%, rgba(46, 160, 67, 0.05) 0%, transparent 70%);
+        }
+        .map-node {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transform: translate(-50%, -50%);
+        }
+        .map-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #2ea043;
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(46, 160, 67, 0.4);
+            margin-bottom: 4px;
+        }
+        .map-label {
+            font-size: 10px;
+            color: #333333;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .map-line {
+            position: absolute;
+            border-top: 1px dashed #d0d7de;
+            transform-origin: 0 0;
+        }
+
+        /* 每日行程 - 时间轴布局 */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin: 32px 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: #111111;
+        }
+        .day-header {
+            font-size: 16px;
+            font-weight: 700;
+            color: #111111;
+            margin: 24px 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .timeline-item {
+            display: grid;
+            grid-template-columns: 85px 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .time-col {
+            font-size: 13px;
+            font-weight: 600;
+            color: #444444;
+            text-align: right;
+            padding-top: 2px;
+        }
+        .content-col {
+            padding-left: 16px;
+            border-left: 2px solid var(--border-color);
+            position: relative;
+        }
+        .content-col::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            background-color: #ffffff;
+            border: 2px solid #8b949e;
+            border-radius: 50%;
+        }
+        .timeline-item.active .content-col::before {
+            border-color: #2ea043;
+            background-color: #2ea043;
+            box-shadow: 0 0 8px rgba(46, 160, 67, 0.4);
+        }
+        .event-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #111111;
+        }
+        .event-desc {
+            font-size: 12px;
+            color: #57606a;
+            line-height: 1.5;
+        }
+
+        /* 费用计算器 (浅色) */
+        .expense-card {
+            background-color: #f6f8fa;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 60px;
+            border: 1px solid var(--border-color);
+        }
+        .expense-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e1e4e8;
+            color: #333333;
+        }
+        .expense-row input {
+            background: transparent;
+            border: none;
+            color: #111111;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: right;
+            width: 100px;
+            font-family: inherit;
+        }
+        .expense-row input:focus {
+            outline: none;
+            color: #2ea043;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+            color: #111111;
+            font-weight: 600;
+        }
+        .total-amount {
+            font-size: 24px;
+            font-weight: 800;
+            color: #2ea043;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="subtitle">Guangzhou / Foshan / HK</div>
+        <h1>跨年旅行计划</h1>
+        <div class="dates">12月29日 – 1月2日 · 5天4晚</div>
+    </div>
+
+    <!-- 旅程地图 -->
+    <div class="subtitle" style="margin-top: 32px;">JOURNEY MAP</div>
+    <div class="map-card">
+        <div class="map-bg"></div>
+        <div class="map-line" style="top: 20%; left: 50%; width: 70px; transform: rotate(90deg);"></div>
+        <div class="map-line" style="top: 50%; left: 25%; width: 95px; transform: rotate(0deg);"></div>
+        <div class="map-line" style="top: 50%; left: 50%; width: 110px; transform: rotate(50deg);"></div>
+        
+        <div class="map-node" style="top: 20%; left: 50%;">
+            <div class="map-dot"></div>
+            <div class="map-label">白云机场 (CAN)</div>
+        </div>
+        <div class="map-node" style="top: 50%; left: 25%;">
+            <div class="map-dot"></div>
+            <div class="map-label">佛山·岭南天地</div>
+        </div>
+        <div class="map-node" style="top: 50%; left: 50%;">
+            <div class="map-dot"></div>
+            <div class="map-label">广州南站 / 市区</div>
+        </div>
+        <div class="map-node" style="top: 85%; left: 75%;">
+            <div class="map-dot"></div>
+            <div class="map-label">香港西九龙</div>
+        </div>
+    </div>
+
+    <!-- 航班行程 -->
+    <div class="subtitle">BOARDING</div>
+    
+    <!-- 去程 A -->
+    <div class="card">
+        <div style="font-size: 10px; color: #9ba3af; margin-bottom: 16px;">FLIGHT 01 / 国航 CA1301 · 空客350</div>
+        <div class="flight-row">
+            <div class="station">
+                <h2>PEK</h2>
+                <p>北京首都</p>
+            </div>
+            <div class="flight-path">
+                <span>12月29日</span>
+            </div>
+            <div class="station">
+                <h2>CAN</h2>
+                <p>广州白云</p>
+            </div>
+        </div>
+        <div class="flight-details">
+            <div>
+                <span>出发</span>
+                <strong>15:00</strong>
+            </div>
+            <div style="text-align: right;">
+                <span>抵达</span>
+                <strong>18:30</strong>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 去程 B -->
+    <div class="card">
+        <div style="font-size: 10px; color: #9ba3af; margin-bottom: 16px;">FLIGHT 01 / 南航 CZ3102 · 空客350</div>
+        <div class="flight-row">
+            <div class="station">
+                <h2>PKX</h2>
+                <p>北京大兴</p>
+            </div>
+            <div class="flight-path">
+                <span>12月29日</span>
+            </div>
+            <div class="station">
+                <h2>CAN</h2>
+                <p>广州白云</p>
+            </div>
+        </div>
+        <div class="flight-details">
+            <div>
+                <span>出发</span>
+                <strong>12:30</strong>
+            </div>
+            <div style="text-align: right;">
+                <span>抵达</span>
+                <strong>15:40</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 回程 -->
+    <div class="card">
+        <div style="font-size: 10px; color: #9ba3af; margin-bottom: 16px;">FLIGHT 02 / 国泰航空 · 积分兑换</div>
+        <div class="flight-row">
+            <div class="station">
+                <h2>HKG</h2>
+                <p>香港国际</p>
+            </div>
+            <div class="flight-path">
+                <span>1月2日</span>
+            </div>
+            <div class="station">
+                <h2>PEK</h2>
+                <p>北京首都</p>
+            </div>
+        </div>
+        <div class="flight-details">
+            <div>
+                <span>出发</span>
+                <strong>17:05</strong>
+            </div>
+            <div style="text-align: right;">
+                <span>抵达</span>
+                <strong>20:30</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- 每日行程 -->
+    <div class="section-title">每日行程 (Day by Day)</div>
+
+    <!-- Day 1 -->
+    <div class="day-header">▼ Day 1 · 12月29日 · 抵达与夜景</div>
+    <div class="timeline-item active">
+        <div class="time-col">15:00-18:30</div>
+        <div class="content-col">
+            <div class="event-title">航班抵达广州</div>
+            <div class="event-desc">落地广州白云机场，提取行李。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">19:30-20:30</div>
+        <div class="content-col">
+            <div class="event-title">办理入住</div>
+            <div class="event-desc">前往酒店办理 Check-in 放置行李。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">20:30-22:30</div>
+        <div class="content-col">
+            <div class="event-title">晚餐与广州夜景</div>
+            <div class="event-desc">第一顿晚餐，随后漫步欣赏珠江两岸夜景或地标建筑。</div>
+        </div>
+    </div>
+
+    <!-- Day 2 -->
+    <div class="day-header">▼ Day 2 · 12月30日 · 佛山寻味</div>
+    <div class="timeline-item active">
+        <div class="time-col">09:30-10:30</div>
+        <div class="content-col">
+            <div class="event-title">自驾前往佛山</div>
+            <div class="event-desc">从广州市区驱车前往佛山顺德方向。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">10:30-14:00</div>
+        <div class="content-col">
+            <div class="event-title">罗浮宫家具店</div>
+            <div class="event-desc">游览罗浮宫国际家具博览中心，考察空间与家具设计。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">14:30-17:30</div>
+        <div class="content-col">
+            <div class="event-title">岭南天地美食打卡</div>
+            <div class="event-desc">漫步岭南天地，品尝地道烧鹅、双皮奶和煲仔饭。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">17:30-18:30</div>
+        <div class="content-col">
+            <div class="event-title">返回广州市区</div>
+            <div class="event-desc">避开晚高峰回程。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">19:00-21:00</div>
+        <div class="content-col">
+            <div class="event-title">广州晚餐</div>
+            <div class="event-desc">市区晚餐，体验老广风味。</div>
+        </div>
+    </div>
+
+    <!-- Day 3 -->
+    <div class="day-header">▼ Day 3 · 12月31日 · 跨年夜</div>
+    <div class="timeline-item active">
+        <div class="time-col">10:00-18:00</div>
+        <div class="content-col">
+            <div class="event-title">逛街与一日游</div>
+            <div class="event-desc">广州商圈逛街，体验“祖国版一日游”特种兵打卡。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">20:00-00:30</div>
+        <div class="content-col">
+            <div class="event-title">跨年夜晚餐与倒数</div>
+            <div class="event-desc">迎接 2027 年的到来。</div>
+        </div>
+    </div>
+
+    <!-- Day 4 -->
+    <div class="day-header">▼ Day 4 · 1月1日 · 城市探索 (二选一)</div>
+    <div class="timeline-item active">
+        <div class="time-col">10:00-17:00</div>
+        <div class="content-col">
+            <div class="event-title">方案A：广州/长隆</div>
+            <div class="event-desc">广州 Citywalk，下午前往长隆观看马戏。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">或 10:00-17:00</div>
+        <div class="content-col">
+            <div class="event-title">方案B：深圳大疆</div>
+            <div class="event-desc">前往深圳，参观大疆总部体验科技与影像。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">18:00-20:00</div>
+        <div class="content-col">
+            <div class="event-title">新年晚餐</div>
+            <div class="event-desc">元旦聚餐。</div>
+        </div>
+    </div>
+
+    <!-- Day 5 -->
+    <div class="day-header">▼ Day 5 · 1月2日 · 香港与返程</div>
+    <div class="timeline-item active">
+        <div class="time-col">08:30-09:30</div>
+        <div class="content-col">
+            <div class="event-title">前往香港西九龙</div>
+            <div class="event-desc">乘坐早班高铁跨境前往香港。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">09:30-10:00</div>
+        <div class="content-col">
+            <div class="event-title">出关与行李寄存</div>
+            <div class="event-desc">西九龙出关后，在站内或商场寄存行李。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">10:00-13:30</div>
+        <div class="content-col">
+            <div class="event-title">早午餐与免税购物</div>
+            <div class="event-desc">在尖沙咀/九龙附近吃 Brunch，简单逛街。</div>
+        </div>
+    </div>
+    <div class="timeline-item">
+        <div class="time-col">14:00-15:00</div>
+        <div class="content-col">
+            <div class="event-title">前往香港机场</div>
+            <div class="event-desc">乘坐机场快线前往赤鱲角机场准备登机。</div>
+        </div>
+    </div>
+
+    <!-- 费用计算 -->
+    <div class="section-title">预算计算 (Budget)</div>
+    <div class="expense-card">
+        <div class="expense-row">
+            <span style="font-size: 14px;">大交通 (机票+高铁)</span>
+            <div>¥ <input type="number" id="t-traffic" value="3000" oninput="calcTotal()"></div>
+        </div>
+        <div class="expense-row">
+            <span style="font-size: 14px;">住宿费用 (4晚)</span>
+            <div>¥ <input type="number" id="t-hotel" value="8000" oninput="calcTotal()"></div>
+        </div>
+        <div class="expense-row">
+            <span style="font-size: 14px;">餐饮与玩乐</span>
+            <div>¥ <input type="number" id="t-food" value="3000" oninput="calcTotal()"></div>
+        </div>
+        <div class="total-row">
+            <span>预估总计</span>
+            <div class="total-amount">¥ <span id="t-total">14000</span></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function calcTotal() {
+        const traffic = parseFloat(document.getElementById('t-traffic').value) || 0;
+        const hotel = parseFloat(document.getElementById('t-hotel').value) || 0;
+        const food = parseFloat(document.getElementById('t-food').value) || 0;
+        document.getElementById('t-total').innerText = (traffic + hotel + food).toLocaleString();
+    }
+</script>
+</body>
+</html>
